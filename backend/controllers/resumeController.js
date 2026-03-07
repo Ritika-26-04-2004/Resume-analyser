@@ -70,7 +70,7 @@ export const uploadResume = async (req, res) => {
     const resumeText = (pdfData.text || "").slice(0, 15000);
     if (!resumeText.trim()) return res.status(400).json({ error: "Could not extract text" });
 
-    // ---------- LOCAL AI ONLY ----------
+    // --- ALWAYS LOCAL AI (no API call) ---
     const localAnalysis = buildLocalAnalysis(resumeText);
 
     return res.json({ ...localAnalysis, source: "local-ai" });
