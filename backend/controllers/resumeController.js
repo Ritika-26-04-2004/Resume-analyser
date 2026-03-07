@@ -1,15 +1,5 @@
 import pdfParse from "pdf-parse";
 import ResumeAnalysis from "../models/ResumeAnalysis.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-// Only create Gemini client if API key exists
-let genAI = null;
-if (process.env.GEMINI_API_KEY) {
-  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-}
 
 const KNOWN_SKILLS = [
   "react","react.js","node","node.js","javascript","typescript","python",
@@ -80,41 +70,9 @@ export const uploadResume = async (req, res) => {
     const resumeText = (pdfData.text || "").slice(0, 15000);
     if (!resumeText.trim()) return res.status(400).json({ error: "Could not extract text" });
 
-    // ---------- TRY GEMINI IF AVAILABLE ----------
-    if (genAI) {
-      try {
-        const model = genAI.getGenerativeModel({ model: "gemini-3.1-pro-preview" });
-        const prompt = `
-Analyze the resume and return JSON:
-
-{
-  resumeScore:number,
-  atsScore:number,
-  strengths:[],
-  weaknesses:[],
-  skills:[],
-  missingSkills:[],
-  suggestions:[]
-}
-
-Resume:
-${resumeText}
-`;
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = await response.text();
-        const analysis = JSON.parse(text);
-
-        return res.json({ ...analysis, source: "gemini" });
-      } catch (aiError) {
-        console.log("Gemini failed → Using local AI fallback:", aiError.message);
-      }
-    } else {
-      console.log("No GEMINI_API_KEY, using local AI fallback");
-    }
-
-    // ---------- FALLBACK LOCAL AI ----------
+    // ---------- LOCAL AI ONLY ----------
     const localAnalysis = buildLocalAnalysis(resumeText);
+
     return res.json({ ...localAnalysis, source: "local-ai" });
 
   } catch (error) {
