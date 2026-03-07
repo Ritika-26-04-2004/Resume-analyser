@@ -1,6 +1,7 @@
 import pdfParse from "pdf-parse";
 import ResumeAnalysis from "../models/ResumeAnalysis.js";
 
+// List of known skills to detect
 const KNOWN_SKILLS = [
   "react","react.js","node","node.js","javascript","typescript","python",
   "java","c++","c#","sql","mongodb","postgresql","mysql","docker",
@@ -8,15 +9,17 @@ const KNOWN_SKILLS = [
   "tailwind","express"
 ];
 
+// Sections to look for in resume
 const SECTION_KEYWORDS = ["summary","experience","education","skills","projects"];
 
+// Local heuristic-based analysis
 const buildLocalAnalysis = (rawText) => {
   const text = rawText.toLowerCase();
   const wordCount = rawText.split(/\s+/).filter(Boolean).length;
   const hasMetrics = /\b\d+(\.\d+)?\s?(%|x|k|m)\b/.test(text);
   const hasBullets = /[\n\r]\s*[-•*]\s+/.test(rawText);
-  const presentSections = SECTION_KEYWORDS.filter((key) => text.includes(key));
-  const detectedSkills = KNOWN_SKILLS.filter((skill) => text.includes(skill));
+  const presentSections = SECTION_KEYWORDS.filter(key => text.includes(key));
+  const detectedSkills = KNOWN_SKILLS.filter(skill => text.includes(skill));
   const uniqueSkills = [...new Set(detectedSkills)];
 
   let resumeScore = 40;
@@ -28,7 +31,7 @@ const buildLocalAnalysis = (rawText) => {
   resumeScore = Math.min(95, resumeScore);
 
   let atsScore = 40 + presentSections.length * 8;
-  atsScore += uniqueSkills.length > 5 ? 10 : 0;
+  if (uniqueSkills.length > 5) atsScore += 10;
 
   const strengths = [];
   const weaknesses = [];
@@ -62,21 +65,23 @@ const buildLocalAnalysis = (rawText) => {
   };
 };
 
+// Upload endpoint using only local AI
 export const uploadResume = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
     const pdfData = await pdfParse(req.file.buffer);
-    const resumeText = (pdfData.text || "").slice(0, 15000);
+    const resumeText = pdfData.text.slice(0, 15000);
+
     if (!resumeText.trim()) return res.status(400).json({ error: "Could not extract text" });
 
-    // --- ALWAYS LOCAL AI (no API call) ---
-    const localAnalysis = buildLocalAnalysis(resumeText);
+    const analysis = buildLocalAnalysis(resumeText);
 
-    return res.json({ ...localAnalysis, source: "local-ai" });
+    // Always respond with JSON
+    return res.status(200).json({ ...analysis, source: "local-ai" });
 
   } catch (error) {
     console.error("Resume error:", error);
-    res.status(500).json({ error: "Resume analysis failed" });
+    return res.status(500).json({ error: "Resume analysis failed" });
   }
 };
