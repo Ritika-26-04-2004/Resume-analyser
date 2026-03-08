@@ -11,7 +11,11 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI =
   process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ai-resume-analyzer";
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://resume-analyser-1-jfv3.onrender.com", // your frontend URL
+  })
+);
 app.use(express.json());
 
 app.get("/", (req, res) => {
