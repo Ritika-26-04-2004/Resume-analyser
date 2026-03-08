@@ -13,7 +13,12 @@ const MONGO_URI =
 
 app.use(
   cors({
-    origin: "https://resume-analyser-1-jfv3.onrender.com", // your frontend URL
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://127.0.0.1:5173",
+      "https://resume-analyser-1-jfv3.onrender.com"
+    ]
   })
 );
 app.use(express.json());

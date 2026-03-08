@@ -1,8 +1,4 @@
 import pdfParse from "pdf-parse";
-<<<<<<< HEAD
-=======
-import ResumeAnalysis from "../models/ResumeAnalysis.js";
->>>>>>> c2a9ad2f1295f2d62bc9b05fce4882922fc40bc7
 
 // List of known skills to detect
 const KNOWN_SKILLS = [
@@ -74,33 +70,15 @@ export const uploadResume = async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
     const pdfData = await pdfParse(req.file.buffer);
-<<<<<<< HEAD
     const resumeText = (pdfData.text || "").slice(0, 15000);
-=======
-    const resumeText = pdfData.text.slice(0, 15000);
->>>>>>> c2a9ad2f1295f2d62bc9b05fce4882922fc40bc7
 
     if (!resumeText.trim()) return res.status(400).json({ error: "Could not extract text" });
 
     const analysis = buildLocalAnalysis(resumeText);
-<<<<<<< HEAD
     return res.json({
       ...analysis,
       createdAt: new Date().toISOString(),
     });
-
-  }catch(error){
-
-    console.error("Resume error:",error);
-
-    res.status(500).json({
-      error:"Resume analysis failed"
-    });
-=======
-
-    // Always respond with JSON
-    return res.status(200).json({ ...analysis, source: "local-ai" });
->>>>>>> c2a9ad2f1295f2d62bc9b05fce4882922fc40bc7
 
   } catch (error) {
     console.error("Resume error:", error);
