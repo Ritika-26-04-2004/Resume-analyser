@@ -10,7 +10,6 @@ const UploadPage = () => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
-  const [jobDescription, setJobDescription] = useState("");
   const navigate = useNavigate();
 
   const onDrop = useCallback((e) => {
@@ -62,10 +61,6 @@ const UploadPage = () => {
       setError("Please select a PDF resume first.");
       return;
     }
-    if (!jobDescription.trim()) {
-      setError("Please paste the job description.");
-      return;
-    }
     setUploading(true);
     setError("");
     setProgress(0);
@@ -74,7 +69,6 @@ const UploadPage = () => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("jobDescription", jobDescription);
 
       const response = await fetch(`${API_URL}/upload-resume`, {
         method: "POST",
@@ -183,21 +177,6 @@ const UploadPage = () => {
             {error}
           </p>
         )}
-
-        <div className="mt-8 text-left">
-          <label className="block text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
-            Job Description
-          </label>
-          <p className="mt-1 text-[11px] text-slate-500">
-            Paste the job description so we can score how well your resume matches this specific role.
-          </p>
-          <textarea
-            className="mt-3 h-32 w-full resize-y rounded-2xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 outline-none ring-0 transition focus:border-sky-500 focus:bg-slate-900/80"
-            placeholder="Paste the job title, responsibilities, and required skills here..."
-            value={jobDescription}
-            onChange={(e) => setJobDescription(e.target.value)}
-          />
-        </div>
 
         <button
           type="button"

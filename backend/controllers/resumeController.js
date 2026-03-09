@@ -96,12 +96,6 @@ export const uploadResume = async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const jobDescription = (req.body?.jobDescription || "").toString();
-
-    if (!jobDescription.trim()) {
-      return res.status(400).json({ error: "Job description is required" });
-    }
-
     const pdfData = await pdfParse(req.file.buffer);
     const resumeText = (pdfData.text || "").slice(0, 15000);
 
@@ -124,7 +118,7 @@ export const uploadResume = async (req, res) => {
             },
             {
               role: "user",
-              content: `Analyze the following resume according to the given job description.
+              content: `Analyze the following resume for general strength, clarity, and typical software/tech roles.
 Provide a JSON object with the following shape (no markdown, no explanation, no extra fields):
 {
   "matchScore": number,
@@ -133,9 +127,6 @@ Provide a JSON object with the following shape (no markdown, no explanation, no 
   "suggestions": string[],
   "summary": string
 }
-
-Job Description:
-${jobDescription}
 
 Resume Content:
 ${resumeText}`
